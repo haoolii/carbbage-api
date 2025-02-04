@@ -5,6 +5,8 @@
 
 ### Public
 
+* post /asset/upload
+
 * POST /shorten/image
 
 * POST /shorten/media

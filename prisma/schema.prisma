@@ -14,23 +14,31 @@ datasource db {
 }
 
 model Record {
-  id               String  @id @default(uuid())
-  uniqueId         String  @unique
+  id               String    @id @default(uuid())
+  uniqueId         String    @unique
   prompt           String?
   password         String?
-  passwordRequired Boolean @default(false)
+  passwordRequired Boolean   @default(false)
   type             String
   expireIn         Int?
   expireAt         DateTime?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
 
 model Original {
-  id        String  @id @default(uuid())
+  id        String   @id @default(uuid())
   recordId  String
   content   String
   meta      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Asset {
+  id         String   @id @default(uuid())
+  orginialId String?
+  filename   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
