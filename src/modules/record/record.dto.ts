@@ -1,12 +1,14 @@
-import { Original, Record } from "@prisma/client";
+import { Asset, Record, Url } from "@prisma/client";
 
-export class RecordOriginalsDto {
+export class RecordAssetsUrlsDto {
   private record: Record;
-  private originals: Original[] = [];
+  private assets: Asset[] = [];
+  private urls: Url[] = [];
 
-  constructor(record: Record, originals: Original[]) {
+  constructor(record: Record, assets: Asset[], urls: Url[]) {
     this.record = record;
-    this.originals = originals;
+    this.assets = assets;
+    this.urls = urls;
   }
 
   get() {
@@ -30,9 +32,10 @@ export class RecordOriginalsDto {
       type: this.record.type,
       prompt: this.record.prompt,
       createdAt: this.record.createdAt,
-      originals: this.originals.map((original) => ({
-        content: original.content,
-      })),
+      urls: this.urls,
+      assets: this.assets.map(asset => ({
+        filename: asset.filename
+      }))
     };
   }
 
@@ -43,9 +46,10 @@ export class RecordOriginalsDto {
       prompt: this.record.prompt,
       passwordRequired: this.record.passwordRequired,
       createdAt: this.record.createdAt,
-      originals: this.originals.map((original) => ({
-        content: original.content,
-      })),
+      urls: this.urls,
+      assets: this.assets.map(asset => ({
+        filename: asset.filename
+      }))
     };
   }
 }

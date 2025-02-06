@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { date, ZodSchema } from "zod";
+import { ZodSchema } from "zod";
 import { Code } from "../types/code";
 import { upload } from "../upload";
 import MessageResponse from "../types/messageResponse.type";
@@ -45,18 +45,41 @@ export const validateParams =
   };
 
 export const validateUpload =
-  (type: string) =>
-  (req: Request, res: Response<MessageResponse>, next: NextFunction) => {
-    try {
-      upload.array("files", 2)(req, res, (err: any) => {
-        if (err || !req.files) {
-          return next(err);
-        }
-        // TODO: check file type
-        req.body.files = req.files;
-        next();
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+  (type?: string) =>
+    (req: Request, res: Response<MessageResponse>, next: NextFunction) => {
+      try {
+        upload.array("files", 2)(req, res, (err: any) => {
+
+          if (err || !req.files) {
+            return next(err);
+          }
+
+          const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+          const invalidFiles = (req.files as Express.Multer.File[]).filter(
+            (file) => !allowedTypes.includes(file.mimetype)
+          );
+
+          if (invalidFiles.length > 0) {
+            invalidFiles.forEach((file) => {
+              try {
+                fs.unlinkSync(file.path);
+              } catch (err) {
+                console.error("Error while deleting the file:", err);
+              }
+            });
+
+            return res.status(400).json({
+              code: Code.INVALID_REQUEST_DATA,
+              message: "Invalid file type",
+              data: null,
+            });
+          }
+
+          // TODO: check file type
+          // req.body.files = req.files;
+          next();
+        });
+      } catch (error) {
+        next(error);
+      }
+    };

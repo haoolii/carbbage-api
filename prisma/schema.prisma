@@ -26,19 +26,22 @@ model Record {
   updatedAt        DateTime  @updatedAt
 }
 
-model Original {
+model Url {
   id        String   @id @default(uuid())
-  recordId  String
+  recordId  String?
   content   String
-  meta      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Asset {
-  id         String   @id @default(uuid())
-  orginialId String?
-  filename   String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String   @id @default(uuid())
+  recordId    String?
+  mimetype    String?
+  destination String?
+  filename    String?
+  path        String?
+  size        Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

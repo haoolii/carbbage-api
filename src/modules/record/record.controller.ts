@@ -12,11 +12,11 @@ import { Code } from "../../types/code";
 import {
   createImageRecord,
   createUrlRecord,
-  getOriginalsByRecordId,
+  getAssetsByRecordId,
   getRecordByUniqueId,
+  getUrlByRecordId,
 } from "./record.service";
-import { RecordOriginalsDto } from "./record.dto";
-import { flattenFiles } from "../../utils";
+import { RecordAssetsUrlsDto } from "./record.dto";
 
 export const postUrlRecordHandler = async (
   req: Request<{}, {}, PostUrlRecordBody>,
@@ -42,15 +42,13 @@ export const postImageRecordHandler = async (
   next: NextFunction
 ) => {
   try {
-
     const uniqueId = await createImageRecord({
       prompt: req.body.prompt,
       password: req.body.password,
       passwordRequired: req.body.passwordRequired,
       expireIn: req.body.expireIn,
-      files: req.body.files,
+      assetIds: req.body.assetIds
     });
-
     res.json({
       code: Code.SUCCESS,
       data: { uniqueId },
@@ -87,11 +85,13 @@ export const getRecordHandler = async (
 
     const record = await getRecordByUniqueId(uniqueId);
 
-    const originals = await getOriginalsByRecordId(record.id);
+    const assets = await getAssetsByRecordId(record.id);
+
+    const urls = await getUrlByRecordId(record.id);
 
     res.json({
       code: Code.SUCCESS,
-      data: new RecordOriginalsDto(record, originals).getPublic(),
+      data: new RecordAssetsUrlsDto(record, assets, urls).getPublic(),
       message: "success",
     });
   } catch (error) {

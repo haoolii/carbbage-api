@@ -6,34 +6,12 @@ export const postUrlRecordBodySchema = z.object({
 
 export type PostUrlRecordBody = z.infer<typeof postUrlRecordBodySchema>;
 
-const fileSchema = z.object({
-    fieldname: z.string(),
-    originalname: z.string(),
-    encoding: z.string(),
-    mimetype: z.string(),
-    buffer: z.instanceof(Buffer).optional(),
-    destination: z.string().optional(),
-    filename: z.string().optional(),
-    path: z.string().optional(),
-    size: z.number(),
-  });
-
-export const postImageRecordFormDataSchema = z.object({
-    prompt: z.string().optional(),
-    password: z.string().optional(),
-    passwordRequired: z.string(),
-    expireIn: z.string(),
-    files: z.array(fileSchema)
-});
-
-export type PostImageRecordFormData = z.infer<typeof postImageRecordFormDataSchema>;
-
 export const postImageRecordBodySchema = z.object({
     prompt: z.string().optional(),
     password: z.string().optional(),
     passwordRequired: z.boolean(),
     expireIn: z.number().nonnegative(),
-    files: z.array(fileSchema)
+    assetIds: z.array(z.string())
 });
 
 export type PostImageRecordBody = z.infer<typeof postImageRecordBodySchema>;
@@ -43,7 +21,7 @@ export const postMediaRecordBodySchema = z.object({
     password: z.string().optional(),
     passwordRequired: z.string(),
     expireIn: z.string(),
-    files: z.array(fileSchema)
+    assetIds: z.array(z.string())
 });
 
 export type PostMediaRecordBody = z.infer<typeof postMediaRecordBodySchema>;

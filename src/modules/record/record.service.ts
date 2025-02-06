@@ -4,26 +4,26 @@ import { ShortenTypeEnum } from "../../types/shorten";
 import { calcExpireAt, generateUniqueId } from "../../utils";
 import { PostImageRecordBody } from "./record.schema";
 
-export const getOriginalsByRecordId = async (recordId: string) => {
-  return db.original.findMany({
-    where: {
-      recordId,
-    },
-  });
-};
+export const getUrlByRecordId = async (recordId: string) => {
+  return db.url.findMany({ where: { recordId } })
+}
+
+export const getAssetsByRecordId = async (recordId: string) => {
+  return db.asset.findMany({ where: { recordId } })
+}
 
 export const getRecordByUniqueId = async (uniqueId: string) => {
-  const reocrd = await db.record.findUnique({
+  const record = await db.record.findUnique({
     where: {
       uniqueId,
     },
   });
 
-  if (!reocrd) {
+  if (!record) {
     throw new Error(Code.NOT_FOUND);
   }
 
-  return reocrd;
+  return record;
 };
 
 /**
@@ -42,7 +42,7 @@ export const createUrlRecord = async (content: string) => {
       },
     });
 
-    await prisma.original.create({
+    await prisma.url.create({
       data: {
         content,
         recordId: record.id,
@@ -52,28 +52,21 @@ export const createUrlRecord = async (content: string) => {
 
   return uniqueId;
 };
-
-// prompt: z.string().optional(),
-//   password: z.string().optional(),
-//   passwordRequired: z.string(),
-//   expireIn: z.number().nonnegative(),
-//   files: z.array(fileSchema)
-
 export const createImageRecord = async ({
   prompt,
   password,
   passwordRequired,
   expireIn,
-  fileNames,
+  assetIds,
 }: {
   prompt?: string;
   password?: string;
   passwordRequired: boolean;
   expireIn: number;
-  fileNames: string[]
+  assetIds: string[]
 }) => {
   const uniqueId = await generateUniqueId();
-  
+
   await db.$transaction(async (prisma) => {
     const record = await prisma.record.create({
       data: {
@@ -87,12 +80,17 @@ export const createImageRecord = async ({
       },
     });
 
-    await prisma.original.createMany({
-      data: fileNames.map((fileName) => ({
-        content: fileName,
-        recordId: record.id,
-      })),
-    });
+    for (let assetId of assetIds) {
+      await prisma.asset.update({
+        where: {
+          id: assetId
+        },
+        data: {
+          recordId: record.id
+        }
+      })
+    }
+
   });
 
   return uniqueId;
