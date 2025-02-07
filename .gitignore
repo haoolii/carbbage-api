@@ -1,4 +1,5 @@
 /uploads
+*.pem
 
 # Logs
 logs

@@ -48,7 +48,7 @@ export class RecordAssetsUrlsDto {
       createdAt: this.record.createdAt,
       urls: this.urls,
       assets: this.assets.map(asset => ({
-        filename: asset.filename
+        filename: asset.filename,
       }))
     };
   }
