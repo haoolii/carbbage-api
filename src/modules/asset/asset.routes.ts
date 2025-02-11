@@ -6,6 +6,6 @@ const router = Router();
 
 router.post("/upload", validateUpload(""), postUploadHandler);
 
-router.get("/file/:k1/:k2", fileHandler);
+router.get("/files/:k1/:k2", fileHandler);
 
 export default router;

@@ -6,7 +6,7 @@
 
 - POST /api/asset/upload
 
-- GET /api/asset/file/:key
+- GET /api/asset/files/:key
 
 - POST /api/record/image
 
