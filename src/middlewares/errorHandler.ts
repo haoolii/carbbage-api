@@ -12,7 +12,7 @@ export function errorHandler(
   //   const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
   //   res.status(statusCode);
 
-  if (Object.values(Code).includes(err.message)) {
+  if (Object.values(Code).includes(err.message as unknown as Code)) {
     res.json({
       message: err.message,
       stack: process.env.NODE_ENV === "production" ? "🥞" : err.stack,

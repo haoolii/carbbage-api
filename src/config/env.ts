@@ -1,0 +1,14 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+const env = {
+  S3_CLIENT_REGION: process.env.S3_CLIENT_REGION,
+  S3_CLIENT_ENDPOINT: process.env.S3_CLIENT_ENDPOINT,
+  S3_CLIENT_CREDENTIALS_ACCESSKEYID:
+    process.env.S3_CLIENT_CREDENTIALS_ACCESSKEYID,
+  S3_CLIENT_CREDENTIALS_SECRET_ACCESS_KEY:
+    process.env.S3_CLIENT_CREDENTIALS_SECRET_ACCESS_KEY,
+  S3_CLIENT_BUCKET: process.env.S3_CLIENT_BUCKET,
+};
+
+export default env;

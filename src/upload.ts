@@ -1,21 +1,8 @@
 import multer from "multer";
-import path from "path";
 import { Code } from "./types/code";
-import { v4 as uuid } from 'uuid';
-
-const storage = multer.diskStorage({
-  destination: "./uploads/",
-  filename: function (req, file, cb) {
-    cb(
-      null,
-      `${uuid()}${path.extname(file.originalname)}`
-    );
-  },
-});
 
 export const upload = multer({
-  // storage: multer.memoryStorage(),
-  storage,
+  storage:multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (req, file, callback) => {
     const type = (`${req?.query?.type || 'image'}`).toLowerCase();

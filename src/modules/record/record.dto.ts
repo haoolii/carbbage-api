@@ -34,7 +34,7 @@ export class RecordAssetsUrlsDto {
       createdAt: this.record.createdAt,
       urls: this.urls,
       assets: this.assets.map(asset => ({
-        filename: asset.filename
+        key: asset.key
       }))
     };
   }
@@ -48,7 +48,7 @@ export class RecordAssetsUrlsDto {
       createdAt: this.record.createdAt,
       urls: this.urls,
       assets: this.assets.map(asset => ({
-        filename: asset.filename,
+        key: asset.key,
       }))
     };
   }

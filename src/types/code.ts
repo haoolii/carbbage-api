@@ -1,7 +1,7 @@
 export enum Code {
-    SUCCESS = 0,
-    ERROR = 1,
-    FAILED = 2,
+    SUCCESS = "0",
+    ERROR = "1",
+    FAILED = "2",
   
     VALIDATION_ERROR = "20000",
     INVALID_TYPE = "20001",

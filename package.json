@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
+    "postinstall": "npx prisma generate",
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "start:dist": "node dist/src/index.js",
@@ -15,6 +16,8 @@
   "keywords": [],
   "license": "MIT",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.744.0",
+    "@aws-sdk/s3-request-presigner": "^3.744.0",
     "@prisma/client": "^6.3.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

@@ -2,25 +2,26 @@
 
 ## API
 
-
 ### Public
 
-* post /asset/upload
+- POST /api/asset/upload
 
-* POST /shorten/image
+- GET /api/asset/file/:key
 
-* POST /shorten/media
+- POST /api/record/image
 
-* POST /shorten/url
+- POST /api/record/media
 
-* GET  /shorten/:uniqueId
+- POST /api/record/url
 
-* POST /shorten/:uniqueId
+- GET /api/record/:uniqueId
+
+- POST /api/record/:uniqueId
 
 ### Admin
 
-
 ### Note
+
 ```
 openssl genrsa -out private.pem 2048
 openssl rsa -in private.pem -pubout -out public.pem

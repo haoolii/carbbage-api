@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
 }
 
 datasource db {
@@ -37,11 +38,7 @@ model Url {
 model Asset {
   id          String   @id @default(uuid())
   recordId    String?
-  mimetype    String?
-  destination String?
-  filename    String?
-  path        String?
-  size        Int?
+  key         String   @default("")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

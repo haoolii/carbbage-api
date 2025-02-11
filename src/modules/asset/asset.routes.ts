@@ -1,9 +1,11 @@
 import { Router } from "express";
-import { postUploadHandler } from "./asset.controller";
+import { fileHandler, postUploadHandler } from "./asset.controller";
 import { validateUpload } from "../../middlewares/validate";
 
 const router = Router();
 
 router.post("/upload", validateUpload(""), postUploadHandler);
+
+router.get("/file/:k1/:k2", fileHandler);
 
 export default router;
