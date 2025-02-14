@@ -19,8 +19,8 @@ export type PostImageRecordBody = z.infer<typeof postImageRecordBodySchema>;
 export const postMediaRecordBodySchema = z.object({
     prompt: z.string().optional(),
     password: z.string().optional(),
-    passwordRequired: z.string(),
-    expireIn: z.string(),
+    passwordRequired: z.boolean(),
+    expireIn: z.number().nonnegative(),
     assetIds: z.array(z.string())
 });
 
@@ -32,15 +32,15 @@ export const getRecordParamsSchema = z.object({
 
 export type GetRecordParams = z.infer<typeof getRecordParamsSchema>;
 
-export const postGainRecordParamsSchema = z.object({
+export const postRecordPasswordParamsSchema = z.object({
     uniqueId: z.string()
 });
 
-export type PostGainRecordParams = z.infer<typeof postGainRecordParamsSchema>;
+export type PostRecordPasswordParams = z.infer<typeof postRecordPasswordParamsSchema>;
 
 
-export const postGainRecordBodySchema = z.object({
+export const postRecordPasswordBodySchema = z.object({
     password: z.string()
 });
 
-export type PostGainRecordBody = z.infer<typeof postGainRecordBodySchema>;
+export type PostRecordPasswordBody = z.infer<typeof postRecordPasswordBodySchema>;

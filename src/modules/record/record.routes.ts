@@ -1,7 +1,7 @@
 import { Router } from "express";
 import {
   getRecordHandler,
-  postGainRecordHandler,
+  postRecordPasswordHandler,
   postImageRecordHandler,
   postMediaRecordHandler,
   postUrlRecordHandler,
@@ -9,8 +9,8 @@ import {
 import { validateBody, validateParams } from "../../middlewares/validate";
 import {
   getRecordParamsSchema,
-  postGainRecordBodySchema,
-  postGainRecordParamsSchema,
+  postRecordPasswordBodySchema,
+  postRecordPasswordParamsSchema,
   postImageRecordBodySchema,
   postMediaRecordBodySchema,
   postUrlRecordBodySchema,
@@ -43,10 +43,10 @@ router.get(
 );
 
 router.post(
-  "/:uniqueId",
-  validateParams(postGainRecordParamsSchema),
-  validateBody(postGainRecordBodySchema),
-  postGainRecordHandler
+  "/:uniqueId/password",
+  validateParams(postRecordPasswordParamsSchema),
+  validateBody(postRecordPasswordBodySchema),
+  postRecordPasswordHandler
 );
 
 export default router;

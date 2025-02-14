@@ -43,6 +43,14 @@ export function calcExpireAt(expireIn: number): string | null {
   return dayjs().add(expireIn, "seconds").toISOString();
 }
 
+/**
+ * 
+ * @param expireAt 
+ * @returns 
+ */
+export function isExpired(expireAt: string | Date): boolean {
+  return dayjs(expireAt).isBefore()
+}
 
 /**
  * 

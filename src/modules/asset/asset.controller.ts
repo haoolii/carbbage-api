@@ -19,23 +19,24 @@ export const postUploadHandler = async (
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
-  const files = flattenFiles(req.files);
-
-  if (!files || !files.length) {
-    throw new Error(Code.FILE_IS_EMPTY);
-  }
-
-  const keys = await uploadFilesToS3(files);
-
   try {
+    const files = flattenFiles(req.files);
+
+    if (!files || !files.length) {
+      throw new Error(Code.FILE_IS_EMPTY);
+    }
+
+    const assetIds = await uploadFilesToS3(files);
+
     res.json({
       code: Code.SUCCESS,
       data: {
-        keys,
+        assetIds,
       },
       message: "success",
     });
   } catch (error) {
+    res.write('event: error\n');
     next(error);
   }
 };
@@ -46,18 +47,6 @@ export const fileHandler = async (
   next: NextFunction
 ) => {
   try {
-    // const authHeader = req.cookies.Authorization || req.headers.authorization;
-    //   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    //     return next("Unauthorized")
-    //   }
-    //   try {
-    //     const token = authHeader.split(" ")[1];
-    //     const payload = verify(token, PUBLIC_KEY, { algorithms: ["RS256"] });
-    //     TODO: Filter
-    //     next();
-    //   } catch (err) {
-    //     return next(err);
-    //   }
     const { k1, k2 } = req.params;
 
     const key = `${k1}/${k2}`;

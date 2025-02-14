@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import {
   GetRecordParams,
-  PostGainRecordBody,
-  PostGainRecordParams,
+  PostRecordPasswordBody,
+  PostRecordPasswordParams,
   PostImageRecordBody,
   PostMediaRecordBody,
   PostUrlRecordBody,
@@ -10,15 +10,12 @@ import {
 import MessageResponse from "../../types/messageResponse.type";
 import { Code } from "../../types/code";
 import {
-  createImageRecord,
+  createAssetsRecord,
   createUrlRecord,
-  getAssetsByRecordId,
-  getRecordByUniqueId,
-  getUrlByRecordId,
+  getRecordAllDetail,
+  verifyPasswordAndGenerateToken,
 } from "./record.service";
-import { RecordAssetsUrlsDto } from "./record.dto";
-import jwt from "jsonwebtoken";
-import { PRIVATE_KEY } from "../../core/auth";
+import { ShortenTypeEnum } from "../../types/shorten";
 
 export const postUrlRecordHandler = async (
   req: Request<{}, {}, PostUrlRecordBody>,
@@ -44,12 +41,12 @@ export const postImageRecordHandler = async (
   next: NextFunction
 ) => {
   try {
-    const uniqueId = await createImageRecord({
+    const uniqueId = await createAssetsRecord(ShortenTypeEnum.IMAGE, {
       prompt: req.body.prompt,
       password: req.body.password,
       passwordRequired: req.body.passwordRequired,
       expireIn: req.body.expireIn,
-      assetIds: req.body.assetIds
+      assetIds: req.body.assetIds,
     });
     res.json({
       code: Code.SUCCESS,
@@ -67,10 +64,17 @@ export const postMediaRecordHandler = async (
   next: NextFunction
 ) => {
   try {
+    const uniqueId = await createAssetsRecord(ShortenTypeEnum.MEDIA, {
+      prompt: req.body.prompt,
+      password: req.body.password,
+      passwordRequired: req.body.passwordRequired,
+      expireIn: req.body.expireIn,
+      assetIds: req.body.assetIds,
+    });
     res.json({
       code: Code.SUCCESS,
-      data: null,
-      message: "Post Media Record",
+      data: { uniqueId },
+      message: "success",
     });
   } catch (error) {
     next(error);
@@ -83,26 +87,12 @@ export const getRecordHandler = async (
   next: NextFunction
 ) => {
   try {
-    const uniqueId = req.params.uniqueId;
 
-    const record = await getRecordByUniqueId(uniqueId);
-
-    const assets = await getAssetsByRecordId(record.id);
-
-    const urls = await getUrlByRecordId(record.id);
-
-    const token = jwt.sign(
-      { uniqueId },
-      PRIVATE_KEY,
-      { algorithm: "RS256", expiresIn: "1h" }
-    );
+    const data = await getRecordAllDetail(req.params.uniqueId, req.headers.authorization || "");
 
     res.json({
       code: Code.SUCCESS,
-      data: {
-        record: new RecordAssetsUrlsDto(record, assets, urls).getPublic(),
-        token
-      },
+      data,
       message: "success",
     });
   } catch (error) {
@@ -110,42 +100,22 @@ export const getRecordHandler = async (
   }
 };
 
-export const postGainRecordHandler = async (
-  req: Request<PostGainRecordParams, {}, PostGainRecordBody>,
+export const postRecordPasswordHandler = async (
+  req: Request<PostRecordPasswordParams, {}, PostRecordPasswordBody>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
   try {
-    const uniqueId = req.params.uniqueId;
-
-    const password = req.body.password;
-
-    const record = await getRecordByUniqueId(uniqueId);
-
-    if (password !== record.password) {
-      res.json({
-        code: Code.ERROR,
-        data: null,
-        message: "error",
-      });
-      return;
-    }
-
-    const assets = await getAssetsByRecordId(record.id);
-
-    const urls = await getUrlByRecordId(record.id);
-
-    const token = jwt.sign(
-      { uniqueId },
-      PRIVATE_KEY,
-      { algorithm: "RS256", expiresIn: "1h" }
+    const token = await verifyPasswordAndGenerateToken(
+      req.params.uniqueId,
+      req.body.password
     );
-
-    res.cookie("Authorization", `Bearer ${token}`, { httpOnly: true, secure: true });
 
     res.json({
       code: Code.SUCCESS,
-      data: { record: new RecordAssetsUrlsDto(record, assets, urls).getPrivate(), token },
+      data: {
+        token,
+      },
       message: "success",
     });
   } catch (error) {

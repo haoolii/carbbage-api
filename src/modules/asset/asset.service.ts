@@ -29,20 +29,24 @@ export const uploadFilesToS3 = async (files: Express.Multer.File[]) => {
         })
         .catch((err) => {
           // TODO: TBD
-          console.log(err);
+          console.log('err', err);
         });
     });
   });
 
   const keys = await Promise.all(uploadPromises);
 
-  await db.asset.createMany({
-    data: keys.map((key) => ({
-      key,
-    })),
-  });
+  let assetIds: Array<string> = [];
+  for (let key of keys) {
+    const asset = await db.asset.create({
+      data: {
+        key
+      }
+    });
+    assetIds.push(asset.id);
+  }
 
-  return keys;
+  return assetIds;
 };
 
 export const getFileFromS3 = async (key: string) => {
