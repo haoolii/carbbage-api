@@ -1,13 +1,13 @@
 import jwt from "jsonwebtoken";
-import { PRIVATE_KEY, PUBLIC_KEY } from "./auth";
+import env from "../config/env";
 
 export const sign = (payload: string | Buffer | object) => {
-  return jwt.sign(payload, PRIVATE_KEY, {
+  return jwt.sign(payload, env.PRIVATE_KEY || "", {
     algorithm: "RS256",
     expiresIn: "1h",
   });
 };
 
 export const verify = (token: string) => {
-  return jwt.verify(token, PUBLIC_KEY, { algorithms: ["RS256"] });
+  return jwt.verify(token, env.PUBLIC_KEY || "", { algorithms: ["RS256"] });
 };

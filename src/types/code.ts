@@ -14,5 +14,7 @@ export enum Code {
     FILE_NOT_FOUND = "20008",
     RECORD_EXPIRED = "20009",
     INVALID_REQUEST_DATA = "20010",
+
+    UNAUTHORIZED = "80001"
   }
   
