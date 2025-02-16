@@ -5,6 +5,7 @@ import {
   postImageRecordHandler,
   postMediaRecordHandler,
   postUrlRecordHandler,
+  getRecordCountHandler,
 } from "./record.controller";
 import { validateBody, validateParams } from "../../middlewares/validate";
 import {
@@ -40,6 +41,11 @@ router.get(
   "/:uniqueId",
   validateParams(getRecordParamsSchema),
   getRecordHandler
+);
+
+router.get(
+  "/:uniqueId/count",
+  getRecordCountHandler
 );
 
 router.post(

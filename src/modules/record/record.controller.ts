@@ -13,6 +13,7 @@ import {
   createAssetsRecord,
   createUrlRecord,
   getRecordAllDetail,
+  getRecordCount,
   verifyPasswordAndGenerateToken,
 } from "./record.service";
 import { ShortenTypeEnum } from "../../types/shorten";
@@ -87,8 +88,28 @@ export const getRecordHandler = async (
   next: NextFunction
 ) => {
   try {
+    const data = await getRecordAllDetail(
+      req.params.uniqueId,
+      req.headers.authorization || ""
+    );
 
-    const data = await getRecordAllDetail(req.params.uniqueId, req.headers.authorization || "");
+    res.json({
+      code: Code.SUCCESS,
+      data,
+      message: "success",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getRecordCountHandler = async (
+  req: Request<GetRecordParams, {}>,
+  res: Response<MessageResponse>,
+  next: NextFunction
+) => {
+  try {
+    const data = await getRecordCount(req.params.uniqueId);
 
     res.json({
       code: Code.SUCCESS,

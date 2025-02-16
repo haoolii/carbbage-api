@@ -13,6 +13,22 @@ export const getAssetsByRecordId = async (recordId: string) => {
   return db.asset.findMany({ where: { recordId } });
 };
 
+export const increaseRecordAccessCount = async (recordId: string) => {
+  return db.recordAccessCount.upsert({
+    where: { recordId },
+    create: {
+      recordId,
+      count: 1,
+    },
+    update: {
+      recordId,
+      count: {
+        increment: 1,
+      },
+    },
+  });
+};
+
 export const getRecordByUniqueId = async (uniqueId: string) => {
   const record = await db.record.findUnique({
     where: {
@@ -42,7 +58,6 @@ export const verifyPasswordAndGenerateToken = async (
   const token = sign({ uniqueId, keys: assets.map((asset) => asset.key) });
 
   return token;
-
 };
 
 /**
@@ -72,19 +87,22 @@ export const createUrlRecord = async (content: string) => {
   return uniqueId;
 };
 
-export const createAssetsRecord = async (type: ShortenTypeEnum, {
-  prompt,
-  password,
-  passwordRequired,
-  expireIn,
-  assetIds,
-}: {
-  prompt?: string;
-  password?: string;
-  passwordRequired: boolean;
-  expireIn: number;
-  assetIds: string[];
-}) => {
+export const createAssetsRecord = async (
+  type: ShortenTypeEnum,
+  {
+    prompt,
+    password,
+    passwordRequired,
+    expireIn,
+    assetIds,
+  }: {
+    prompt?: string;
+    password?: string;
+    passwordRequired: boolean;
+    expireIn: number;
+    assetIds: string[];
+  }
+) => {
   const uniqueId = await generateUniqueId();
 
   await db.$transaction(async (prisma) => {
@@ -125,11 +143,14 @@ export const collectUrlRecord = async (record: Record) => {
     passwordRequired: record.passwordRequired,
     createdAt: record.createdAt,
     urls: urls,
-    assets: []
-  }
+    assets: [],
+  };
 };
 
-export const collectAssetRecordFullFields = async (record: Record, assets: Asset[]) => {
+export const collectAssetRecordFullFields = async (
+  record: Record,
+  assets: Asset[]
+) => {
   return {
     uniqueId: record.uniqueId,
     type: record.type,
@@ -138,9 +159,8 @@ export const collectAssetRecordFullFields = async (record: Record, assets: Asset
     createdAt: record.createdAt,
     urls: [],
     assets: assets,
-  }
-}
-
+  };
+};
 
 export const collectAssetRecordPartialFields = async (record: Record) => {
   return {
@@ -149,8 +169,8 @@ export const collectAssetRecordPartialFields = async (record: Record) => {
     prompt: record.prompt,
     passwordRequired: record.passwordRequired,
     createdAt: record.createdAt,
-  }
-}
+  };
+};
 
 export const collectToken = (authorization: string) => {
   if (!authorization) {
@@ -164,7 +184,7 @@ export const collectToken = (authorization: string) => {
   const token = authorization.split(" ")[1];
 
   return token;
-}
+};
 
 export const verifyTokenAndRecord = (token: string, uniqueId: string) => {
   try {
@@ -174,35 +194,49 @@ export const verifyTokenAndRecord = (token: string, uniqueId: string) => {
     };
 
     return payload.uniqueId === uniqueId;
-
   } catch (err) {
     return false;
   }
-}
+};
 
-export const getRecordAllDetail = async (uniqueId: string, authorization: string) => {
+export const getRecordCount = async (uniqueId: string) => {
+  const record = await getRecordByUniqueId(uniqueId);
+
+  const data = await db.recordAccessCount.findUnique({
+    where: { recordId: record.id },
+  });
+
+  return {
+    count: data?.count,
+  };
+};
+
+export const getRecordAllDetail = async (
+  uniqueId: string,
+  authorization: string
+) => {
   const record = await getRecordByUniqueId(uniqueId);
 
   if (record.type === "url") {
+    await increaseRecordAccessCount(record.id);
     return {
       record: await collectUrlRecord(record),
-      tokenVerified: false
+      tokenVerified: false,
     };
   }
 
   // expired
   if (record.expireAt && isExpired(record.expireAt)) {
-    return null
+    return null;
   }
 
   if (!record.passwordRequired) {
-
     const assets = await getAssetsByRecordId(record.id);
-
+    await increaseRecordAccessCount(record.id);
     return {
       record: await collectAssetRecordFullFields(record, assets),
       tokenVerified: false,
-      token: sign({ uniqueId, keys: assets.map((asset) => asset.key) })
+      token: sign({ uniqueId, keys: assets.map((asset) => asset.key) }),
     };
   }
 
@@ -211,7 +245,7 @@ export const getRecordAllDetail = async (uniqueId: string, authorization: string
   if (!token) {
     return {
       record: await collectAssetRecordPartialFields(record),
-      tokenVerified: false
+      tokenVerified: false,
     };
   }
 
@@ -220,16 +254,17 @@ export const getRecordAllDetail = async (uniqueId: string, authorization: string
   if (!verified) {
     return {
       record: await collectAssetRecordPartialFields(record),
-      tokenVerified: false
+      tokenVerified: false,
     };
   }
 
+  await increaseRecordAccessCount(record.id);
   const assets = await getAssetsByRecordId(record.id);
 
   return {
     record: await collectAssetRecordFullFields(record, assets),
     token: token,
-    tokenVerified: true
+    tokenVerified: true,
   };
 
   // v無密碼 Get                 => return  全部資料 + token

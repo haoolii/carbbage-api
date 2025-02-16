@@ -50,3 +50,21 @@ model Admin {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model RecordAccessCount {
+  id        String   @id @default(uuid())
+  recordId  String   @unique
+  count     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ActionLog {
+  id        String   @id @default(uuid())
+  type      String
+  targetId  String
+  ipAddress String
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
