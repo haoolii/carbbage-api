@@ -13,6 +13,10 @@ export const queryRecords = async ({
   });
 };
 
+export const countRecords = async () => {
+  return db.record.count();
+};
+
 export const queryAssets = async ({
   page,
   size,
@@ -26,6 +30,10 @@ export const queryAssets = async ({
   });
 };
 
+export const countAssets = async () => {
+  return db.asset.count();
+};
+
 export const queryUrls = async ({
   page,
   size,
@@ -37,4 +45,8 @@ export const queryUrls = async ({
     skip: page * size,
     take: size,
   });
+};
+
+export const countUrls = async () => {
+  return db.url.count();
 };

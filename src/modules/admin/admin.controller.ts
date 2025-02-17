@@ -5,7 +5,14 @@ import MessageResponse from "../../types/messageResponse.type";
 import { Code } from "../../types/code";
 
 // services
-import { queryAssets, queryRecords, queryUrls } from "./admin.service";
+import {
+  countAssets,
+  countRecords,
+  countUrls,
+  queryAssets,
+  queryRecords,
+  queryUrls,
+} from "./admin.service";
 
 export const getRecordsHandler = async (
   req: Request<{}, {}, {}, { page: number; size: number }>,
@@ -16,11 +23,12 @@ export const getRecordsHandler = async (
     const { page = 0, size = 20 } = req.query;
 
     const records = await queryRecords({ page: +page, size: +size });
-
+    const total = await countRecords();
     res.json({
       code: Code.SUCCESS,
       data: {
         records,
+        total,
       },
       message: "success",
     });
@@ -39,11 +47,12 @@ export const getUrlsHandler = async (
     const { page = 0, size = 20 } = req.query;
 
     const urls = await queryUrls({ page: +page, size: +size });
-
+    const total = await countUrls();
     res.json({
       code: Code.SUCCESS,
       data: {
         urls,
+        total,
       },
       message: "success",
     });
@@ -62,11 +71,13 @@ export const getAssetsHandler = async (
     const { page = 0, size = 20 } = req.query;
 
     const assets = await queryAssets({ page: +page, size: +size });
+    const total = await countAssets();
 
     res.json({
       code: Code.SUCCESS,
       data: {
         assets,
+        total,
       },
       message: "success",
     });
