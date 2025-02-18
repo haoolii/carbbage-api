@@ -11,8 +11,9 @@ export function assetAuth(
   const { k1, k2 } = req.params;
 
   const key = `${k1}/${k2}`;
-  console.log('cookie', req.cookies['Authorization'])
+
   const authHeader = req.headers.authorization || req.cookies['Authorization'];
+
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return next("Unauthorized");
   }

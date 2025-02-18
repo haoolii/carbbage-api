@@ -3,9 +3,9 @@ import {
   GetRecordParams,
   PostRecordPasswordBody,
   PostRecordPasswordParams,
-  PostImageRecordBody,
   PostMediaRecordBody,
   PostUrlRecordBody,
+  PostImageRecordBody,
 } from "./record.schema";
 import MessageResponse from "../../types/messageResponse.type";
 import { Code } from "../../types/code";
@@ -17,6 +17,8 @@ import {
   verifyPasswordAndGenerateToken,
 } from "./record.service";
 import { ShortenTypeEnum } from "../../types/shorten";
+import { flattenFiles } from "../../utils";
+import { uploadFilesToS3 } from "../asset/asset.service";
 
 export const postUrlRecordHandler = async (
   req: Request<{}, {}, PostUrlRecordBody>,
@@ -42,13 +44,22 @@ export const postImageRecordHandler = async (
   next: NextFunction
 ) => {
   try {
+    const files = flattenFiles(req.files);
+
+    if (!files || !files.length) {
+      throw new Error(Code.FILE_IS_EMPTY);
+    }
+
+    const assetIds = await uploadFilesToS3(files);
+
     const uniqueId = await createAssetsRecord(ShortenTypeEnum.IMAGE, {
       prompt: req.body.prompt,
       password: req.body.password,
       passwordRequired: req.body.passwordRequired,
       expireIn: req.body.expireIn,
-      assetIds: req.body.assetIds,
+      assetIds: assetIds,
     });
+
     res.json({
       code: Code.SUCCESS,
       data: { uniqueId },

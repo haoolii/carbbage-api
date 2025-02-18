@@ -2,20 +2,23 @@ import { Router } from "express";
 import {
   getRecordHandler,
   postRecordPasswordHandler,
-  postImageRecordHandler,
   postMediaRecordHandler,
   postUrlRecordHandler,
   getRecordCountHandler,
+  postImageRecordHandler,
 } from "./record.controller";
-import { validateBody, validateParams } from "../../middlewares/validate";
+import { validateBody, validateParams, validateUpload } from "../../middlewares/validate";
 import {
   getRecordParamsSchema,
   postRecordPasswordBodySchema,
   postRecordPasswordParamsSchema,
-  postImageRecordBodySchema,
   postMediaRecordBodySchema,
   postUrlRecordBodySchema,
+  postImageRecordFormDataSchema,
+  postImageRecordBodySchema,
 } from "./record.schema";
+import { parseFormData } from "../../middlewares/parse";
+import { imageRecordParser } from "./utils";
 
 const router = Router();
 
@@ -27,6 +30,9 @@ router.post(
 
 router.post(
   "/image",
+  validateUpload(""),
+  validateBody(postImageRecordFormDataSchema),
+  parseFormData(imageRecordParser),
   validateBody(postImageRecordBodySchema),
   postImageRecordHandler
 );

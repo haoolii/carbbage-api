@@ -11,6 +11,8 @@ const env = {
   S3_CLIENT_BUCKET: process.env.S3_CLIENT_BUCKET,
   PRIVATE_KEY: process.env.PRIVATE_KEY,
   PUBLIC_KEY: process.env.PUBLIC_KEY,
+  CLOUDFLARE_TURMSTILE_SECRET_KEY: process.env.CLOUDFLARE_TURMSTILE_SECRET_KEY,
+  NODE_ENV: process.env.NODE_ENV
 };
 
 export default env;

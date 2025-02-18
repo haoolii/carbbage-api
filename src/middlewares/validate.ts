@@ -30,6 +30,31 @@ export const validateBody =
     }
   };
 
+export const validateFormData =
+  (schema: ZodSchema) => (req: Request, res: Response, next: NextFunction) => {
+    try {
+      schema.parse(req.body);
+      next();
+    } catch (error) {
+      if (req.files && Array.isArray(req.files)) {
+        // if found error and files exist
+        req.files.forEach((file: Express.Multer.File) => {
+          try {
+            fs.unlinkSync(file.path);
+          } catch (err) {
+            console.error("Error while deleting the file:", err);
+          }
+        });
+      }
+
+      res.status(400).json({
+        code: Code.INVALID_REQUEST_DATA,
+        message: "Invalid request data",
+        date: null,
+      });
+    }
+  };
+
 export const validateParams =
   (schema: ZodSchema) => (req: Request, res: Response, next: NextFunction) => {
     try {

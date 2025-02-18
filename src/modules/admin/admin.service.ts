@@ -1,15 +1,19 @@
+import { Record as DbRecord } from "@prisma/client";
 import db from "../../config/db";
 
 export const queryRecords = async ({
   page,
   size,
+  orderBy = { createdAt: "desc" },
 }: {
   page: number;
   size: number;
+  orderBy?: Partial<Record<keyof DbRecord, "asc" | "desc">>;
 }) => {
   return db.record.findMany({
     skip: page * size,
     take: size,
+    orderBy,
   });
 };
 

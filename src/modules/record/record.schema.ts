@@ -6,12 +6,20 @@ export const postUrlRecordBodySchema = z.object({
 
 export type PostUrlRecordBody = z.infer<typeof postUrlRecordBodySchema>;
 
+export const postImageRecordFormDataSchema = z.object({
+    prompt: z.string().optional(),
+    password: z.string().optional(),
+    passwordRequired: z.string(),
+    expireIn: z.string(),
+});
+
+export type PostImageRecordFormData = z.infer<typeof postImageRecordFormDataSchema>;
+
 export const postImageRecordBodySchema = z.object({
     prompt: z.string().optional(),
     password: z.string().optional(),
     passwordRequired: z.boolean(),
     expireIn: z.number().nonnegative(),
-    assetIds: z.array(z.string())
 });
 
 export type PostImageRecordBody = z.infer<typeof postImageRecordBodySchema>;
