@@ -4,6 +4,7 @@ import { Code } from "../types/code";
 import { upload } from "../upload";
 import MessageResponse from "../types/messageResponse.type";
 import fs from "fs";
+import { verifyCaptcha } from "../core/captcha";
 
 export const validateBody =
   (schema: ZodSchema) => (req: Request, res: Response, next: NextFunction) => {
@@ -71,40 +72,63 @@ export const validateParams =
 
 export const validateUpload =
   (type?: string) =>
-    (req: Request, res: Response<MessageResponse>, next: NextFunction) => {
-      try {
-        upload.array("files", 5)(req, res, (err: any) => {
+  (req: Request, res: Response<MessageResponse>, next: NextFunction) => {
+    try {
+      upload.array("files", 5)(req, res, (err: any) => {
+        if (err || !req.files) {
+          return next(err);
+        }
 
-          if (err || !req.files) {
-            return next(err);
-          }
+        // const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+        // const invalidFiles = (req.files as Express.Multer.File[]).filter(
+        //   (file) => !allowedTypes.includes(file.mimetype)
+        // );
 
-          // const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-          // const invalidFiles = (req.files as Express.Multer.File[]).filter(
-          //   (file) => !allowedTypes.includes(file.mimetype)
-          // );
+        // if (invalidFiles.length > 0) {
+        //   invalidFiles.forEach((file) => {
+        //     try {
+        //       fs.unlinkSync(file.path);
+        //     } catch (err) {
+        //       console.error("Error while deleting the file:", err);
+        //     }
+        //   });
 
-          // if (invalidFiles.length > 0) {
-          //   invalidFiles.forEach((file) => {
-          //     try {
-          //       fs.unlinkSync(file.path);
-          //     } catch (err) {
-          //       console.error("Error while deleting the file:", err);
-          //     }
-          //   });
+        //   return res.status(400).json({
+        //     code: Code.INVALID_REQUEST_DATA,
+        //     message: "Invalid file type",
+        //     data: null,
+        //   });
+        // }
 
-          //   return res.status(400).json({
-          //     code: Code.INVALID_REQUEST_DATA,
-          //     message: "Invalid file type",
-          //     data: null,
-          //   });
-          // }
+        // TODO: check file type
+        // req.body.files = req.files;
+        next();
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
-          // TODO: check file type
-          // req.body.files = req.files;
-          next();
-        });
-      } catch (error) {
-        next(error);
+export const validateCaptchaToken =
+  () => async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const ip = req.ip;
+
+      const captchaToken = req.body?.captchaToken || "";
+
+      if (!captchaToken || !ip) throw new Error(Code.UNAUTHORIZED);
+
+
+      if (!(await verifyCaptcha(captchaToken, ip))) {
+        throw new Error(Code.UNAUTHORIZED);
       }
-    };
+
+      next();
+    } catch (error) {
+      res.status(400).json({
+        code: Code.UNAUTHORIZED,
+        message: "Captcha token invalid",
+        date: null,
+      });
+    }
+  };

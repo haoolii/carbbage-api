@@ -7,7 +7,7 @@ import {
   getRecordCountHandler,
   postImageRecordHandler,
 } from "./record.controller";
-import { validateBody, validateParams, validateUpload } from "../../middlewares/validate";
+import { validateBody, validateCaptchaToken, validateParams, validateUpload } from "../../middlewares/validate";
 import {
   getRecordParamsSchema,
   postRecordPasswordBodySchema,
@@ -16,14 +16,16 @@ import {
   postUrlRecordBodySchema,
   postImageRecordFormDataSchema,
   postImageRecordBodySchema,
+  postMediaRecordFormDataSchema,
 } from "./record.schema";
 import { parseFormData } from "../../middlewares/parse";
-import { imageRecordParser } from "./utils";
+import { imageRecordParser, mediaRecordParser } from "./utils";
 
 const router = Router();
 
 router.post(
   "/url",
+  validateCaptchaToken(),
   validateBody(postUrlRecordBodySchema),
   postUrlRecordHandler
 );
@@ -31,6 +33,7 @@ router.post(
 router.post(
   "/image",
   validateUpload(""),
+  validateCaptchaToken(),
   validateBody(postImageRecordFormDataSchema),
   parseFormData(imageRecordParser),
   validateBody(postImageRecordBodySchema),
@@ -39,6 +42,10 @@ router.post(
 
 router.post(
   "/media",
+  validateUpload(""),
+  validateCaptchaToken(),
+  validateBody(postMediaRecordFormDataSchema),
+  parseFormData(mediaRecordParser),
   validateBody(postMediaRecordBodySchema),
   postMediaRecordHandler
 );
@@ -56,6 +63,7 @@ router.get(
 
 router.post(
   "/:uniqueId/password",
+  validateCaptchaToken(),
   validateParams(postRecordPasswordParamsSchema),
   validateBody(postRecordPasswordBodySchema),
   postRecordPasswordHandler

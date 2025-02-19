@@ -76,12 +76,20 @@ export const postMediaRecordHandler = async (
   next: NextFunction
 ) => {
   try {
+    const files = flattenFiles(req.files);
+
+    if (!files || !files.length) {
+      throw new Error(Code.FILE_IS_EMPTY);
+    }
+
+    const assetIds = await uploadFilesToS3(files);
+
     const uniqueId = await createAssetsRecord(ShortenTypeEnum.MEDIA, {
       prompt: req.body.prompt,
       password: req.body.password,
       passwordRequired: req.body.passwordRequired,
       expireIn: req.body.expireIn,
-      assetIds: req.body.assetIds,
+      assetIds: assetIds,
     });
     res.json({
       code: Code.SUCCESS,
