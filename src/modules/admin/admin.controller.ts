@@ -15,15 +15,15 @@ import {
 } from "./admin.service";
 
 export const getRecordsHandler = async (
-  req: Request<{}, {}, {}, { page: number; size: number }>,
+  req: Request<{}, {}, {}, { page: number; size: number; uniqueId: string }>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
   try {
-    const { page = 0, size = 20 } = req.query;
+    const { page = 0, size = 20, uniqueId } = req.query;
 
-    const records = await queryRecords({ page: +page, size: +size });
-    const total = await countRecords();
+    const records = await queryRecords({ page: +page, size: +size, uniqueId });
+    const total = await countRecords({ uniqueId });
     res.json({
       code: Code.SUCCESS,
       data: {
@@ -39,15 +39,25 @@ export const getRecordsHandler = async (
 };
 
 export const getUrlsHandler = async (
-  req: Request<{}, {}, {}, { page: number; size: number }>,
+  req: Request<
+    {},
+    {},
+    {},
+    { page: number; size: number; recordId: string; content: string }
+  >,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
   try {
-    const { page = 0, size = 20 } = req.query;
+    const { page = 0, size = 20, recordId, content } = req.query;
 
-    const urls = await queryUrls({ page: +page, size: +size });
-    const total = await countUrls();
+    const urls = await queryUrls({
+      page: +page,
+      size: +size,
+      recordId,
+      content,
+    });
+    const total = await countUrls({ recordId, content });
     res.json({
       code: Code.SUCCESS,
       data: {
@@ -63,15 +73,15 @@ export const getUrlsHandler = async (
 };
 
 export const getAssetsHandler = async (
-  req: Request<{}, {}, {}, { page: number; size: number }>,
+  req: Request<{}, {}, {}, { page: number; size: number, recordId: string, key: string }>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
   try {
-    const { page = 0, size = 20 } = req.query;
+    const { page = 0, size = 20, recordId, key } = req.query;
 
-    const assets = await queryAssets({ page: +page, size: +size });
-    const total = await countAssets();
+    const assets = await queryAssets({ page: +page, size: +size, recordId, key });
+    const total = await countAssets({ recordId, key });
 
     res.json({
       code: Code.SUCCESS,
