@@ -1,0 +1,28 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+  - name: deploy-to-server
+    image: alpine:latest
+    commands:
+      # 安裝 SSH 客戶端
+      - apk update
+      - apk add --no-cache openssh
+      # 禁用 host key 檢查並使用 ssh 連接
+      - ssh -o StrictHostKeyChecking=no -i ./id_rsa_linode root@{ip} "docker ps"
+
+# - name: install-dependencies
+#   image: node:18
+#   commands:
+#   - npm install
+# - name: build-application
+#   image: node:18
+#   commands:
+#   - npm run build
+# - name: start-app
+#   image: node:18
+#   commands:
+#   - npm run start:dist
+
+
