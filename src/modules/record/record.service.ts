@@ -33,6 +33,7 @@ export const getRecordByUniqueId = async (uniqueId: string) => {
   const record = await db.record.findUnique({
     where: {
       uniqueId,
+      isDeleted: false
     },
   });
 
@@ -271,4 +272,23 @@ export const getRecordAllDetail = async (
   // v有密碼 無token Get         => return  部分資料 tokenVerified = false
   // v有密碼 有token沒Pass Get   => return  部分資料 tokenVerified = false
   //  有密碼 有token且Pass Get   => return  全部資料 tokenVerified = true
+};
+
+export const createRecordReport = async (uniqueId: string, content: string) => {
+  return db.$transaction(async (prisma) => {
+    const reocrd = await prisma.record.findUnique({ where: { uniqueId } });
+
+    if (!reocrd) {
+      throw new Error(Code.NOT_FOUND);
+    }
+
+    await prisma.recordReport.create({
+      data: {
+        recordId: reocrd.id,
+        content,
+      },
+    });
+
+    return true;
+  });
 };

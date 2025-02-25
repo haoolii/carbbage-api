@@ -1,4 +1,4 @@
-import { Record as DbRecord } from "@prisma/client";
+import { Record as DbRecord, RecordReport } from "@prisma/client";
 import db from "../../config/db";
 
 export const queryRecords = async ({
@@ -118,6 +118,35 @@ export const countUrls = async ({
       content: {
         contains: content,
       },
+    },
+  });
+};
+
+export const queryRecordReports = async ({
+  page,
+  size,
+}: {
+  page: number;
+  size: number;
+}) => {
+  return db.recordReport.findMany({
+    skip: page * size,
+    take: size,
+  });
+};
+
+export const countRecordReports = async () => {
+  return db.recordReport.count({});
+};
+
+export const putRecordReport = async (recordReportId: string, recordReport: RecordReport) => {
+  return db.recordReport.update({
+    where: {
+      id: recordReportId,
+    },
+    data: {
+      content: recordReport.content,
+      isDeleted: recordReport.isDeleted,
     },
   });
 };

@@ -6,11 +6,14 @@ import {
   PostMediaRecordBody,
   PostUrlRecordBody,
   PostImageRecordBody,
+  PostRecordReportBody,
+  PostRecordReportParams,
 } from "./record.schema";
 import MessageResponse from "../../types/messageResponse.type";
 import { Code } from "../../types/code";
 import {
   createAssetsRecord,
+  createRecordReport,
   createUrlRecord,
   getRecordAllDetail,
   getRecordCount,
@@ -156,6 +159,29 @@ export const postRecordPasswordHandler = async (
       data: {
         token,
       },
+      message: "success",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const postRecordReportHandler = async (
+  req: Request<PostRecordReportParams, {}, PostRecordReportBody>,
+  res: Response<MessageResponse>,
+  next: NextFunction
+) => {
+  try {
+    const { uniqueId } = req.params;
+    const { content } = req.body;
+
+    const result = await createRecordReport(uniqueId, content);
+
+    if (!result) throw new Error(Code.ERROR);
+
+    res.json({
+      code: Code.SUCCESS,
+      data: {},
       message: "success",
     });
   } catch (error) {

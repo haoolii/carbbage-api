@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getAssetsHandler, getRecordsHandler, getUrlsHandler } from "./admin.controller";
+import { getAssetsHandler, getRecordReportsHandler, getRecordsHandler, getUrlsHandler, putRecordReportsHandler } from "./admin.controller";
 import { adminAuth } from "../../middlewares/adminAuth";
 import authRouter from "./auth/auth.routes";
 
@@ -7,6 +7,8 @@ const router = Router();
 
 router.get("/assets", adminAuth, getAssetsHandler);
 router.get("/records", adminAuth, getRecordsHandler);
+router.get("/recordReports", adminAuth ,getRecordReportsHandler);
+router.put("/recordReports/:recordReportId", adminAuth, putRecordReportsHandler);
 router.get("/urls", adminAuth, getUrlsHandler);
 
 router.use("/auth", authRouter)

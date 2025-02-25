@@ -6,8 +6,14 @@ import {
   postUrlRecordHandler,
   getRecordCountHandler,
   postImageRecordHandler,
+  postRecordReportHandler,
 } from "./record.controller";
-import { validateBody, validateCaptchaToken, validateParams, validateUpload } from "../../middlewares/validate";
+import {
+  validateBody,
+  validateCaptchaToken,
+  validateParams,
+  validateUpload,
+} from "../../middlewares/validate";
 import {
   getRecordParamsSchema,
   postRecordPasswordBodySchema,
@@ -17,6 +23,8 @@ import {
   postImageRecordFormDataSchema,
   postImageRecordBodySchema,
   postMediaRecordFormDataSchema,
+  postRecordReportParamsSchema,
+  postRecordReportBodySchema,
 } from "./record.schema";
 import { parseFormData } from "../../middlewares/parse";
 import { imageRecordParser, mediaRecordParser } from "./utils";
@@ -56,10 +64,7 @@ router.get(
   getRecordHandler
 );
 
-router.get(
-  "/:uniqueId/count",
-  getRecordCountHandler
-);
+router.get("/:uniqueId/count", getRecordCountHandler);
 
 router.post(
   "/:uniqueId/password",
@@ -67,6 +72,13 @@ router.post(
   validateParams(postRecordPasswordParamsSchema),
   validateBody(postRecordPasswordBodySchema),
   postRecordPasswordHandler
+);
+
+router.post("/:uniqueId/report",
+  validateCaptchaToken(),
+  validateParams(postRecordReportParamsSchema),
+  validateBody(postRecordReportBodySchema),
+  postRecordReportHandler
 );
 
 export default router;
