@@ -8,8 +8,8 @@ RUN npm install
 
 RUN npm run build
 
-ENV PORT=1234
+ENV PORT=4321
 
-EXPOSE 1234
+EXPOSE 4321
 
 CMD ["npm", "run", "start:dist"]
