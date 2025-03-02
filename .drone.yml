@@ -3,26 +3,56 @@ type: docker
 name: default
 
 steps:
-  - name: deploy-to-server
+  # 前置準備
+  - name: upload-to-server
     image: alpine:latest
+    environment:
+      SERVER_IP: ${SERVER_IP}
     commands:
-      # 安裝 SSH 客戶端
-      - apk update
-      - apk add --no-cache openssh
-      # 禁用 host key 檢查並使用 ssh 連接
-      - ssh -o StrictHostKeyChecking=no -i ./id_rsa_linode root@{ip} "docker ps"
+      - apk update && apk add --no-cache openssh
 
-# - name: install-dependencies
-#   image: node:18
-#   commands:
-#   - npm install
-# - name: build-application
-#   image: node:18
-#   commands:
-#   - npm run build
-# - name: start-app
-#   image: node:18
-#   commands:
-#   - npm run start:dist
+      - echo "$SERVER_IP"
 
+      - chmod 600 ./id_rsa_linode
 
+      # 刪除舊專案資料夾
+      - ssh -o StrictHostKeyChecking=no -i ./id_rsa_linode root@$SERVER_IP 'rm -rf /root/cabbage-deploy'
+
+      # 建立新專案資料夾
+      - ssh -o StrictHostKeyChecking=no -i ./id_rsa_linode root@$SERVER_IP 'mkdir -p /root/cabbage-deploy'
+
+      # 傳送專案檔案和 .env 到遠端主機
+      - scp -o StrictHostKeyChecking=no -i ./id_rsa_linode ./cabbage-api.tar.gz ./.env root@$SERVER_IP:/root/cabbage-deploy/
+
+  # clear old docker image
+  - name: clear-docker-image
+    image: alpine:latest
+    environment:
+      SERVER_IP: ${SERVER_IP}
+    commands:
+      - apk update && apk add --no-cache openssh
+      # 停止舊的容器（如果存在）
+      - ssh -o StrictHostKeyChecking=no -i ./id_rsa_linode root@$SERVER_IP 'docker stop cabbage-api-container || true'
+
+      # 刪除舊的容器
+      - ssh -o StrictHostKeyChecking=no -i ./id_rsa_linode root@$SERVER_IP 'docker rm cabbage-api-container || true'
+
+      # 刪除舊映像
+      - ssh -o StrictHostKeyChecking=no -i ./id_rsa_linode root@$SERVER_IP "docker rmi cabbage-api:latest || true"
+
+  # load docker image and start
+  - name: load-docker-image
+    image: alpine:latest
+    environment:
+      SERVER_IP: ${SERVER_IP}
+    commands:
+      - apk update && apk add --no-cache openssh
+
+      # 加載新的 Docker 映像
+      - ssh -o StrictHostKeyChecking=no -i ./id_rsa_linode root@$SERVER_IP "docker load -i /root/cabbage-deploy/cabbage-api.tar.gz"
+
+      # 確認映像已經成功加載
+      - ssh -o StrictHostKeyChecking=no -i ./id_rsa_linode root@$SERVER_IP "docker images"
+
+      # 啟動新的容器
+      - ssh -o StrictHostKeyChecking=no -i ./id_rsa_linode root@$SERVER_IP "docker run -d --name cabbage-api-container --env-file /root/cabbage-deploy/.env -p 4321:4321 --network 1panel-network cabbage-api:latest"
