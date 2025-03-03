@@ -6,10 +6,14 @@ export const queryRecords = async ({
   size,
   uniqueId,
   orderBy = { createdAt: "desc" },
+  createdAtGt,
+  createdAtLt,
 }: {
   page: number;
   size: number;
   uniqueId?: string;
+  createdAtLt?: string;
+  createdAtGt?: string;
   orderBy?: Partial<Record<keyof DbRecord, "asc" | "desc">>;
 }) => {
   return db.record.findMany({
@@ -20,15 +24,49 @@ export const queryRecords = async ({
       uniqueId: {
         contains: uniqueId,
       },
+      createdAt: {
+        lt: createdAtLt || undefined,
+        gt: createdAtGt || undefined,
+      },
     },
   });
 };
+export const deleteRecord = async (id: string, soft = true) => {
+  if (soft) {
+    return db.record.update({
+      where: {
+        id,
+      },
+      data: {
+        isDeleted: true,
+      },
+    });
+  } else {
+    return db.record.delete({
+      where: {
+        id,
+      },
+    });
+  }
+};
 
-export const countRecords = async ({ uniqueId }: { uniqueId?: string }) => {
+export const countRecords = async ({
+  uniqueId,
+  createdAtGt,
+  createdAtLt
+}: {
+  uniqueId?: string;
+  createdAtLt?: string;
+  createdAtGt?: string;
+}) => {
   return db.record.count({
     where: {
       uniqueId: {
         contains: uniqueId,
+      },
+      createdAt: {
+        lt: createdAtLt || undefined,
+        gt: createdAtGt || undefined,
       },
     },
   });
@@ -139,7 +177,10 @@ export const countRecordReports = async () => {
   return db.recordReport.count({});
 };
 
-export const putRecordReport = async (recordReportId: string, recordReport: RecordReport) => {
+export const putRecordReport = async (
+  recordReportId: string,
+  recordReport: RecordReport
+) => {
   return db.recordReport.update({
     where: {
       id: recordReportId,

@@ -10,6 +10,7 @@ import {
   countRecordReports,
   countRecords,
   countUrls,
+  deleteRecord,
   putRecordReport,
   queryAssets,
   queryRecordReports,
@@ -17,17 +18,41 @@ import {
   queryUrls,
 } from "./admin.service";
 import { RecordReport } from "@prisma/client";
+import { getFileListFromS3 } from "../asset/asset.service";
 
 export const getRecordsHandler = async (
-  req: Request<{}, {}, {}, { page: number; size: number; uniqueId: string }>,
+  req: Request<
+    {},
+    {},
+    {},
+    {
+      page: number;
+      size: number;
+      uniqueId: string;
+      createdAtLt: string;
+      createdAtGt: string;
+    }
+  >,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
   try {
-    const { page = 0, size = 20, uniqueId } = req.query;
+    const {
+      page = 0,
+      size = 20,
+      uniqueId,
+      createdAtGt,
+      createdAtLt,
+    } = req.query;
 
-    const records = await queryRecords({ page: +page, size: +size, uniqueId });
-    const total = await countRecords({ uniqueId });
+    const records = await queryRecords({
+      page: +page,
+      size: +size,
+      uniqueId,
+      createdAtGt,
+      createdAtLt,
+    });
+    const total = await countRecords({ uniqueId, createdAtGt, createdAtLt });
     res.json({
       code: Code.SUCCESS,
       data: {
@@ -38,6 +63,27 @@ export const getRecordsHandler = async (
     });
   } catch (error) {
     res.write("event: error\n");
+    next(error);
+  }
+};
+
+export const deleteRecordHandler = async (
+  req: Request<{ id: string }, {}, { soft: boolean }, {}>,
+  res: Response<MessageResponse>,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const { soft = true } = req.body;
+
+    await deleteRecord(id, soft);
+
+    res.json({
+      code: Code.SUCCESS,
+      data: null,
+      message: "success",
+    });
+  } catch (error) {
     next(error);
   }
 };
@@ -137,13 +183,12 @@ export const getRecordReportsHandler = async (
   }
 };
 
-export const putRecordReportsHandler = async  (
+export const putRecordReportsHandler = async (
   req: Request<{ recordReportId: string }, {}, RecordReport, {}>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
   try {
-
     await putRecordReport(req.params.recordReportId, req.body);
 
     res.json({
@@ -154,4 +199,36 @@ export const putRecordReportsHandler = async  (
   } catch (error) {
     next(error);
   }
-}
+};
+
+export const getS3FilesHandler = async (
+  req: Request<{}, {}, {}, {}>,
+  res: Response<MessageResponse>,
+  next: NextFunction
+) => {
+  try {
+    // const { page = 0, size = 20, recordId, content } = req.query;
+
+    // const urls = await queryUrls({
+    //   page: +page,
+    //   size: +size,
+    //   recordId,
+    //   content,
+    // });
+    // const total = await countUrls({ recordId, content });
+    const list = await getFileListFromS3();
+    console.log('list', list)
+    res.json({
+      code: Code.SUCCESS,
+      data: {
+        list,
+        // urls,
+        // total,
+      },
+      message: "success",
+    });
+  } catch (error) {
+    res.write("event: error\n");
+    next(error);
+  }
+};

@@ -1,4 +1,4 @@
-import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { v4 as uuid } from "uuid";
 import { Stream } from "stream";
 import path from "path";
@@ -61,6 +61,28 @@ export const getFileFromS3 = async (key: string) => {
     fileStream
   };
 };
+
+export const getFileListFromS3 = async () => {
+  let continuationToken = undefined;
+  let files: any[] = [];
+
+  const command = new ListObjectsV2Command({
+    Bucket: bucket,
+    // Prefix: prefix, // 可以設置前綴來篩選特定目錄
+    MaxKeys: 20, // 每次最大返回檔案數量
+    ContinuationToken: continuationToken, // 用來實現分頁
+  });
+
+  try {
+    const data = await s3Client.send(command);
+    files = files.concat(data.Contents); // 添加當前頁的檔案
+    continuationToken = data.NextContinuationToken; // 取得下一頁的 continuationToken
+  } catch (err) {
+    console.error("列出檔案錯誤:", err);
+  }
+
+  return files;
+}
 
 export function webStreamToNodeStream(
   webStream: ReadableStream
