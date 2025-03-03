@@ -11,7 +11,8 @@
     "start:dist": "node dist/src/index.js",
     "lint": "eslint --fix src test",
     "test": "jest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "clearOldRecords": "ts-node ./src/scripts/clearOldRecords.ts"
   },
   "keywords": [],
   "license": "MIT",

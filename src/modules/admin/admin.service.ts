@@ -1,5 +1,7 @@
 import { Record as DbRecord, RecordReport } from "@prisma/client";
 import db from "../../config/db";
+import dayjs from "dayjs";
+import { deleteS3Object } from "../asset/asset.service";
 
 export const queryRecords = async ({
   page,
@@ -42,10 +44,46 @@ export const deleteRecord = async (id: string, soft = true) => {
       },
     });
   } else {
-    return db.record.delete({
-      where: {
-        id,
-      },
+    await db.$transaction(async (prisma) => {
+      // 刪除 record 本身
+      await prisma.record.deleteMany({
+        where: {
+          id: id,
+        },
+      });
+
+      // 刪除 record 觀看數
+      await prisma.recordAccessCount.deleteMany({
+        where: {
+          recordId: id,
+        },
+      });
+
+      // 刪除 record 回報
+      await prisma.recordReport.deleteMany({
+        where: {
+          recordId: id,
+        },
+      });
+
+      // 刪除 record 的 assets
+      const assets = await prisma.asset.findMany({
+        where: {
+          recordId: id,
+        },
+      });
+
+      // 刪除 Assets
+      await prisma.asset.deleteMany({
+        where: {
+          recordId: id,
+        },
+      });
+
+      // 刪除 S3 上的物件
+      for (let asset of assets) {
+        await deleteS3Object(asset.key);
+      }
     });
   }
 };
@@ -53,7 +91,7 @@ export const deleteRecord = async (id: string, soft = true) => {
 export const countRecords = async ({
   uniqueId,
   createdAtGt,
-  createdAtLt
+  createdAtLt,
 }: {
   uniqueId?: string;
   createdAtLt?: string;
@@ -190,4 +228,61 @@ export const putRecordReport = async (
       isDeleted: recordReport.isDeleted,
     },
   });
+};
+
+export const deleteOldRecord = async (days: number) => {
+  const records = await db.record.findMany({
+    where: {
+      type: {
+        not: "url",
+      },
+      createdAt: {
+        lt: dayjs().subtract(days, "day").toISOString(),
+      },
+    },
+  });
+
+  for (let record of records) {
+    await db.$transaction(async (prisma) => {
+      // 刪除 record 本身
+      await prisma.record.deleteMany({
+        where: {
+          id: record.id,
+        },
+      });
+
+      // 刪除 record 觀看數
+      await prisma.recordAccessCount.deleteMany({
+        where: {
+          recordId: record.id,
+        },
+      });
+
+      // 刪除 record 回報
+      await prisma.recordReport.deleteMany({
+        where: {
+          recordId: record.id,
+        },
+      });
+
+      // 刪除 record 的 assets
+      const assets = await prisma.asset.findMany({
+        where: {
+          recordId: record.id,
+        },
+      });
+
+      // 刪除 Assets
+      await prisma.asset.deleteMany({
+        where: {
+          recordId: record.id,
+        },
+      });
+
+      // 刪除 S3 上的物件
+      for (let asset of assets) {
+        await deleteS3Object(asset.key);
+      }
+    });
+  }
 };

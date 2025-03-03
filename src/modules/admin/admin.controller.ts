@@ -10,6 +10,7 @@ import {
   countRecordReports,
   countRecords,
   countUrls,
+  deleteOldRecord,
   deleteRecord,
   putRecordReport,
   queryAssets,
@@ -207,23 +208,12 @@ export const getS3FilesHandler = async (
   next: NextFunction
 ) => {
   try {
-    // const { page = 0, size = 20, recordId, content } = req.query;
-
-    // const urls = await queryUrls({
-    //   page: +page,
-    //   size: +size,
-    //   recordId,
-    //   content,
-    // });
-    // const total = await countUrls({ recordId, content });
     const list = await getFileListFromS3();
     console.log('list', list)
     res.json({
       code: Code.SUCCESS,
       data: {
         list,
-        // urls,
-        // total,
       },
       message: "success",
     });
@@ -232,3 +222,20 @@ export const getS3FilesHandler = async (
     next(error);
   }
 };
+
+export const deleteOldRecordsHandler = async  (
+  req: Request<{}, {}, {}, {}>,
+  res: Response<MessageResponse>,
+  next: NextFunction
+) => {
+  try {
+    await deleteOldRecord(30);
+    res.json({
+      code: Code.SUCCESS,
+      data: {},
+      message: "success",
+    });
+  } catch (error) {
+    next(error);
+  }
+}

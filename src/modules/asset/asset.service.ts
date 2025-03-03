@@ -1,4 +1,10 @@
-import { GetObjectCommand, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  ListObjectsV2Command,
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+} from "@aws-sdk/client-s3";
 import { v4 as uuid } from "uuid";
 import { Stream } from "stream";
 import path from "path";
@@ -29,7 +35,7 @@ export const uploadFilesToS3 = async (files: Express.Multer.File[]) => {
         })
         .catch((err) => {
           // TODO: TBD
-          console.log('err', err);
+          console.log("err", err);
         });
     });
   });
@@ -40,8 +46,8 @@ export const uploadFilesToS3 = async (files: Express.Multer.File[]) => {
   for (let key of keys) {
     const asset = await db.asset.create({
       data: {
-        key
-      }
+        key,
+      },
     });
     assetIds.push(asset.id);
   }
@@ -58,8 +64,59 @@ export const getFileFromS3 = async (key: string) => {
   const fileStream = await s3Client.send(command);
 
   return {
-    fileStream
+    fileStream,
   };
+};
+
+// 刪除 S3 物件的函式
+export const deleteDateFolderS3Object = async (prefix: string) => {
+  try {
+    // 先列出目錄下的所有物件
+    const listCommand = new ListObjectsV2Command({
+      Bucket: bucket,
+      Prefix: prefix,  // 目錄的前綴
+    });
+
+    const { Contents } = await s3Client.send(listCommand);
+
+    if (!Contents || Contents.length === 0) {
+      console.log("目錄是空的，無需刪除");
+      return;
+    }
+
+    // 提取所有物件的 Key
+    const objectsToDelete = Contents.map((obj) => ({ Key: obj.Key }));
+
+    // 使用 DeleteObjects 刪除物件
+    const deleteCommand = new DeleteObjectsCommand({
+      Bucket: bucket,
+      Delete: {
+        Objects: objectsToDelete,
+        Quiet: false, // 設定為 false 會返回每個刪除操作的詳細訊息
+      },
+    });
+
+    const deleteResponse = await s3Client.send(deleteCommand);
+    console.log("刪除成功:", deleteResponse);
+  } catch (err) {
+    console.error("刪除失敗:", err);
+  }
+};
+
+
+// 刪除 S3 物件的函式
+export const deleteS3Object = async (key: string) => {
+  try {
+    const command = new DeleteObjectCommand({
+      Bucket: bucket,
+      Key: key,
+    });
+
+    await s3Client.send(command)
+
+  } catch (err) {
+    throw new Error(`刪除 S3 物件錯誤: ${err}`);
+  }
 };
 
 export const getFileListFromS3 = async () => {
@@ -82,7 +139,7 @@ export const getFileListFromS3 = async () => {
   }
 
   return files;
-}
+};
 
 export function webStreamToNodeStream(
   webStream: ReadableStream
