@@ -4,8 +4,6 @@
 
 ### Public
 
-- POST /api/asset/upload
-
 - GET /api/asset/files/:key
 
 - POST /api/record/image
@@ -15,8 +13,10 @@
 - POST /api/record/url
 
 - GET /api/record/:uniqueId
+回傳 Token 與資料
 
-- POST /api/record/:uniqueId
+- POST /api/record/:uniqueId/password
+輸入密碼回傳 Token
 
 ### Admin
 

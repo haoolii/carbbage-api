@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { postLoginHandler, postRegisterHandler } from "./auth.controller";
+import { postLoginHandler } from "./auth.controller";
+import { validateCaptchaToken } from "../../../middlewares/validate";
 
 const router = Router();
 
-router.post("/login", postLoginHandler);
-router.post("/register", postRegisterHandler);
+router.post("/login", validateCaptchaToken(), postLoginHandler);
 
 export default router;
