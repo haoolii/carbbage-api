@@ -185,12 +185,13 @@ export const getRecordReportsHandler = async (
 };
 
 export const putRecordReportsHandler = async (
-  req: Request<{ recordReportId: string }, {}, RecordReport, {}>,
+  req: Request<{ recordReportId: string }, {}, { data: RecordReport }, {}>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
   try {
-    await putRecordReport(req.params.recordReportId, req.body);
+    console.log(req.body);
+    await putRecordReport(req.params.recordReportId, req.body.data);
 
     res.json({
       code: Code.SUCCESS,

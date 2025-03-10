@@ -205,10 +205,22 @@ export const queryRecordReports = async ({
   page: number;
   size: number;
 }) => {
-  return db.recordReport.findMany({
+  const recordReports = await db.recordReport.findMany({
     skip: page * size,
     take: size,
   });
+
+  return await Promise.all(
+    recordReports.map(async (recordReport) => {
+      const record = await db.record.findUnique({
+        where: { id: recordReport.recordId },
+      });
+      return {
+        ...recordReport,
+        record,
+      };
+    })
+  );
 };
 
 export const countRecordReports = async () => {
@@ -285,4 +297,6 @@ export const deleteOldRecord = async (days: number) => {
       }
     });
   }
+
+  return records.length;
 };

@@ -14,33 +14,6 @@ import { Code } from "../../types/code";
 // utils
 import { flattenFiles } from "../../utils";
 
-export const postUploadHandler = async (
-  req: Request<{}, {}, {}>,
-  res: Response<MessageResponse>,
-  next: NextFunction
-) => {
-  try {
-    const files = flattenFiles(req.files);
-
-    if (!files || !files.length) {
-      throw new Error(Code.FILE_IS_EMPTY);
-    }
-
-    const assetIds = await uploadFilesToS3(files);
-
-    res.json({
-      code: Code.SUCCESS,
-      data: {
-        assetIds,
-      },
-      message: "success",
-    });
-  } catch (error) {
-    res.write('event: error\n');
-    next(error);
-  }
-};
-
 export const fileHandler = async (
   req: Request<{ k1: string; k2: string }, {}, {}>,
   res: Response<MessageResponse>,
