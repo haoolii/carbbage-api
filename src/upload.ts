@@ -25,7 +25,7 @@ export const upload = multer({
     if (allowedTypes.includes(file.mimetype)) {
       callback(null, true); // accept file
     } else {
-      callback(new Error(Code.INVALID_REQUEST_DATA)); // reject file
+      callback(new Error(Code.FILE_NOT_SUPPORTED)); // reject file
     }
   },
 });
