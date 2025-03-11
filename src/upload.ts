@@ -10,6 +10,7 @@ export const upload = multer({
       "image/jpeg",
       "image/png",
       "image/webp",
+      "image/gif",
       // music
       "audio/mpeg",
       "audio/wav",
