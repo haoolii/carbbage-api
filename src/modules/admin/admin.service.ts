@@ -300,3 +300,62 @@ export const deleteOldRecord = async (days: number) => {
 
   return records.length;
 };
+
+export const deleteExpiredRecord = async () => {
+  const records = await db.record.findMany({
+    where: {
+      type: {
+        not: "url",
+      },
+      expireAt: {
+        lt: new Date().toISOString(), // 取得目前的 UTC 時間
+      },
+    },
+  });
+
+  for (let record of records) {
+    await db.$transaction(async (prisma) => {
+      // 刪除 record 本身
+      await prisma.record.deleteMany({
+        where: {
+          id: record.id,
+        },
+      });
+
+      // 刪除 record 觀看數
+      await prisma.recordAccessCount.deleteMany({
+        where: {
+          recordId: record.id,
+        },
+      });
+
+      // 刪除 record 回報
+      await prisma.recordReport.deleteMany({
+        where: {
+          recordId: record.id,
+        },
+      });
+
+      // 刪除 record 的 assets
+      const assets = await prisma.asset.findMany({
+        where: {
+          recordId: record.id,
+        },
+      });
+
+      // 刪除 Assets
+      await prisma.asset.deleteMany({
+        where: {
+          recordId: record.id,
+        },
+      });
+
+      // 刪除 S3 上的物件
+      for (let asset of assets) {
+        await deleteS3Object(asset.key);
+      }
+    });
+  }
+
+  return records.length;
+};

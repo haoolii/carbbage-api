@@ -12,7 +12,9 @@
     "lint": "eslint --fix src test",
     "test": "jest",
     "typecheck": "tsc --noEmit",
-    "clearOldRecords": "ts-node ./src/scripts/clearOldRecords.ts"
+    "clearOldRecords": "ts-node ./src/scripts/clearOldRecords.ts",
+    "clearExpiredRecords": "ts-node ./src/scripts/clearExpiredRecords.ts"
+    
   },
   "keywords": [],
   "license": "MIT",
