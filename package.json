@@ -13,8 +13,8 @@
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "clearOldRecords": "ts-node ./src/scripts/clearOldRecords.ts",
-    "clearExpiredRecords": "ts-node ./src/scripts/clearExpiredRecords.ts"
-    
+    "clearExpiredRecords": "ts-node ./src/scripts/clearExpiredRecords.ts",
+    "updateConfig": "ts-node ./src/scripts/updateConfig.ts"
   },
   "keywords": [],
   "license": "MIT",
