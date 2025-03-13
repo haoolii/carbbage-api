@@ -55,4 +55,4 @@ steps:
       - ssh -o StrictHostKeyChecking=no -i ./id_rsa_linode root@$SERVER_IP "docker images"
 
       # 啟動新的容器
-      - ssh -o StrictHostKeyChecking=no -i ./id_rsa_linode root@$SERVER_IP "docker run -d --name cabbage-api-container --env-file /root/cabbage-deploy/.env -p 4321:4321 --network 1panel-network cabbage-api:latest"
+      - ssh -o StrictHostKeyChecking=no -i ./id_rsa_linode root@$SERVER_IP "docker run -d --name cabbage-api-container --env-file /root/cabbage-deploy/.env -p 127.0.0.1:4321:4321 --network 1panel-network cabbage-api:latest"

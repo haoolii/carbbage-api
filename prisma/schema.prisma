@@ -14,6 +14,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Config {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+}
+
 model Record {
   id               String    @id @default(uuid())
   uniqueId         String    @unique
@@ -23,7 +30,7 @@ model Record {
   type             String
   expireIn         Int?
   expireAt         DateTime?
-  isDeleted        Boolean  @default(false)
+  isDeleted        Boolean   @default(false)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 }
