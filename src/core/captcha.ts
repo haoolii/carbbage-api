@@ -1,6 +1,6 @@
 import env from "../config/env";
 
-export const verifyCaptcha = async (token: string, ip: string) => {
+export const verifyCaptcha = async (token: string, ip?: string) => {
   try {
     const url = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 

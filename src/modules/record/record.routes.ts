@@ -11,6 +11,7 @@ import {
 import {
   validateBody,
   validateCaptchaToken,
+  validateEnable,
   validateParams,
   validateUpload,
 } from "../../middlewares/validate";
@@ -33,6 +34,7 @@ const router = Router();
 
 router.post(
   "/url",
+  validateEnable("URL_ENABLE"),
   validateCaptchaToken(),
   validateBody(postUrlRecordBodySchema),
   postUrlRecordHandler
@@ -40,6 +42,7 @@ router.post(
 
 router.post(
   "/image",
+  validateEnable("IMAGE_ENABLE"),
   validateUpload(""),
   validateCaptchaToken(),
   validateBody(postImageRecordFormDataSchema),
@@ -50,6 +53,7 @@ router.post(
 
 router.post(
   "/media",
+  validateEnable("MEDIA_ENABLE"),
   validateUpload(""),
   validateCaptchaToken(),
   validateBody(postMediaRecordFormDataSchema),

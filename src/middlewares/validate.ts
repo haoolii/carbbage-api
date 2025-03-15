@@ -5,6 +5,7 @@ import { upload } from "../upload";
 import MessageResponse from "../types/messageResponse.type";
 import fs from "fs";
 import { verifyCaptcha } from "../core/captcha";
+import { getConfigs } from "../modules/config/config.service";
 
 export const validateBody =
   (schema: ZodSchema) => (req: Request, res: Response, next: NextFunction) => {
@@ -97,22 +98,49 @@ export const validateUpload =
 export const validateCaptchaToken =
   () => async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const ip = req.ip;
+      const xRealIp = req.headers["x-real-ip"]?.toString();
+
+      const ip = xRealIp || req.ip || undefined;
+
+      console.log("IP:", ip);
 
       const captchaToken = req.body?.captchaToken || "";
 
-      if (!captchaToken || !ip) throw new Error(Code.UNAUTHORIZED);
+      if (!captchaToken) throw new Error(Code.CAPTCHA_IS_NULL);
 
       if (!(await verifyCaptcha(captchaToken, ip))) {
-        throw new Error(Code.UNAUTHORIZED);
+        throw new Error(Code.CAPTCHA_INVALID);
       }
 
       next();
     } catch (error) {
       res.status(400).json({
-        code: Code.UNAUTHORIZED,
-        message: "Captcha token invalid",
+        code: Code.CAPTCHA_ERROR,
+        message: "Captcha token error",
         date: null,
       });
+    }
+  };
+
+export const validateEnable =
+  (key: string) => async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const configs = await getConfigs();
+
+      const config = configs.find(
+        (c) => `${c.key}`.toUpperCase() === `${key}`.toUpperCase()
+      );
+
+      if (!config) {
+        return next(new Error(Code.FEATURE_DISABLE));
+      }
+
+      if (`${config.value}`.toUpperCase() !== "TRUE") {
+        return next(new Error(Code.FEATURE_DISABLE));
+      }
+
+      next();
+    } catch (error) {
+      next(error);
     }
   };

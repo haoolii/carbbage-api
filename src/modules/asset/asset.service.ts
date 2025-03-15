@@ -16,11 +16,30 @@ import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
 
 export const uploadFilesToS3 = async (files: Express.Multer.File[]) => {
-  const uploadPromises = files.map((file) => {
+  const tempUploadFiles = files.map((file) => {
+    return {
+      file: file,
+      key: `${dayjs().utc().format("YYYY-MM-DD")}/${uuid()}${path.extname(
+        file.originalname
+      )}`,
+    };
+  });
+
+  const keys = tempUploadFiles.map((tempUploadFile) => tempUploadFile.key);
+
+  let assetIds: Array<string> = [];
+  for (let key of keys) {
+    const asset = await db.asset.create({
+      data: {
+        key,
+      },
+    });
+    assetIds.push(asset.id);
+  }
+
+  const uploadPromises = tempUploadFiles.map((tempUploadFile) => {
     return new Promise<string>((resolve, reject) => {
-      const key = `${dayjs()
-        .utc()
-        .format("YYYY-MM-DD")}/${uuid()}${path.extname(file.originalname)}`;
+      const { file, key } = tempUploadFile;
       const uploadParams = {
         Bucket: bucket,
         Key: key,
@@ -40,17 +59,7 @@ export const uploadFilesToS3 = async (files: Express.Multer.File[]) => {
     });
   });
 
-  const keys = await Promise.all(uploadPromises);
-
-  let assetIds: Array<string> = [];
-  for (let key of keys) {
-    const asset = await db.asset.create({
-      data: {
-        key,
-      },
-    });
-    assetIds.push(asset.id);
-  }
+  await Promise.all(uploadPromises);
 
   return assetIds;
 };
@@ -74,7 +83,7 @@ export const deleteDateFolderS3Object = async (prefix: string) => {
     // 先列出目錄下的所有物件
     const listCommand = new ListObjectsV2Command({
       Bucket: bucket,
-      Prefix: prefix,  // 目錄的前綴
+      Prefix: prefix, // 目錄的前綴
     });
 
     const { Contents } = await s3Client.send(listCommand);
@@ -103,7 +112,6 @@ export const deleteDateFolderS3Object = async (prefix: string) => {
   }
 };
 
-
 // 刪除 S3 物件的函式
 export const deleteS3Object = async (key: string) => {
   try {
@@ -112,8 +120,7 @@ export const deleteS3Object = async (key: string) => {
       Key: key,
     });
 
-    await s3Client.send(command)
-
+    await s3Client.send(command);
   } catch (err) {
     throw new Error(`刪除 S3 物件錯誤: ${err}`);
   }
