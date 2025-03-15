@@ -8,14 +8,14 @@ export const queryRecords = async ({
   size,
   uniqueId,
   orderBy = { createdAt: "desc" },
-  createdAtGt,
-  createdAtLt,
+  from,
+  to,
 }: {
   page: number;
   size: number;
   uniqueId?: string;
-  createdAtLt?: string;
-  createdAtGt?: string;
+  from?: string;
+  to?: string;
   orderBy?: Partial<Record<keyof DbRecord, "asc" | "desc">>;
 }) => {
   return db.record.findMany({
@@ -27,8 +27,8 @@ export const queryRecords = async ({
         contains: uniqueId,
       },
       createdAt: {
-        lt: createdAtLt || undefined,
-        gt: createdAtGt || undefined,
+        gte: from || undefined,
+        lte: to || undefined,
       },
     },
   });
@@ -92,10 +92,14 @@ export const countRecords = async ({
   uniqueId,
   createdAtGt,
   createdAtLt,
+  from,
+  to
 }: {
   uniqueId?: string;
   createdAtLt?: string;
   createdAtGt?: string;
+  from?: string;
+  to?: string;
 }) => {
   return db.record.count({
     where: {
@@ -103,8 +107,8 @@ export const countRecords = async ({
         contains: uniqueId,
       },
       createdAt: {
-        lt: createdAtLt || undefined,
-        gt: createdAtGt || undefined,
+        gte: from || undefined,
+        lte: to || undefined,
       },
     },
   });
@@ -115,11 +119,15 @@ export const queryAssets = async ({
   size,
   recordId,
   key,
+  from,
+  to
 }: {
   page: number;
   size: number;
   recordId: string;
   key: string;
+  from?: string;
+  to?: string;
 }) => {
   return db.asset.findMany({
     skip: page * size,
@@ -131,6 +139,10 @@ export const queryAssets = async ({
       key: {
         contains: key,
       },
+      createdAt: {
+        gte: from || undefined,
+        lte: to || undefined,
+      },
     },
   });
 };
@@ -138,9 +150,13 @@ export const queryAssets = async ({
 export const countAssets = async ({
   recordId,
   key,
+  from,
+  to,
 }: {
   recordId?: string;
   key?: string;
+  from?: string;
+  to?: string;
 }) => {
   return db.asset.count({
     where: {
@@ -149,6 +165,10 @@ export const countAssets = async ({
       },
       key: {
         contains: key,
+      },
+      createdAt: {
+        gte: from || undefined,
+        lte: to || undefined,
       },
     },
   });
@@ -159,11 +179,15 @@ export const queryUrls = async ({
   size,
   recordId,
   content,
+  from,
+  to,
 }: {
   page: number;
   size: number;
   recordId?: string;
   content?: string;
+  from?: string;
+  to?: string;
 }) => {
   return db.url.findMany({
     skip: page * size,
@@ -175,6 +199,10 @@ export const queryUrls = async ({
       content: {
         contains: content,
       },
+      createdAt: {
+        gte: from || undefined,
+        lte: to || undefined,
+      },
     },
   });
 };
@@ -182,9 +210,13 @@ export const queryUrls = async ({
 export const countUrls = async ({
   recordId,
   content,
+  from,
+  to,
 }: {
   recordId?: string;
   content?: string;
+  from?: string;
+  to?: string;
 }) => {
   return db.url.count({
     where: {
@@ -194,6 +226,10 @@ export const countUrls = async ({
       content: {
         contains: content,
       },
+      createdAt: {
+        gte: from || undefined,
+        lte: to || undefined,
+      },
     },
   });
 };
@@ -201,13 +237,23 @@ export const countUrls = async ({
 export const queryRecordReports = async ({
   page,
   size,
+  from,
+  to,
 }: {
   page: number;
   size: number;
+  from?: string;
+  to?: string;
 }) => {
   const recordReports = await db.recordReport.findMany({
     skip: page * size,
     take: size,
+    where: {
+      createdAt: {
+        gte: from || undefined,
+        lte: to || undefined,
+      },
+    },
   });
 
   return await Promise.all(
@@ -223,8 +269,21 @@ export const queryRecordReports = async ({
   );
 };
 
-export const countRecordReports = async () => {
-  return db.recordReport.count({});
+export const countRecordReports = async ({
+  from,
+  to,
+}: {
+  from?: string;
+  to?: string;
+}) => {
+  return db.recordReport.count({
+    where: {
+      createdAt: {
+        gte: from || undefined,
+        lte: to || undefined,
+      },
+    },
+  });
 };
 
 export const putRecordReport = async (

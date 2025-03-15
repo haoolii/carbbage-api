@@ -50,8 +50,8 @@ export const getRecordsHandler = async (
       page: +page,
       size: +size,
       uniqueId,
-      createdAtGt,
-      createdAtLt,
+      from: createdAtGt,
+      to: createdAtLt,
     });
     const total = await countRecords({ uniqueId, createdAtGt, createdAtLt });
     res.json({
@@ -169,7 +169,7 @@ export const getRecordReportsHandler = async (
       page: +page,
       size: +size,
     });
-    const total = await countRecordReports();
+    const total = await countRecordReports({});
 
     res.json({
       code: Code.SUCCESS,

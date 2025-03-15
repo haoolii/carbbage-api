@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "clearOldRecords": "ts-node ./src/scripts/clearOldRecords.ts",
     "clearExpiredRecords": "ts-node ./src/scripts/clearExpiredRecords.ts",
-    "updateConfig": "ts-node ./src/scripts/updateConfig.ts"
+    "updateConfig": "ts-node ./src/scripts/updateConfig.ts",
+    "checkDailyAssetsCount": "ts-node ./src/scripts/chechDailyAseetsCount.ts"
   },
   "keywords": [],
   "license": "MIT",
