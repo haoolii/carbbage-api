@@ -12,6 +12,7 @@ import { bucket, s3Client } from "../../config/s3";
 import db from "../../config/db";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 dayjs.extend(utc);
 
@@ -163,3 +164,19 @@ export function webStreamToNodeStream(
     },
   });
 }
+
+export const getS3PreSignedUrl = async () => {
+  try {
+    const expiresIn = 300; // Presigned URL 5 分鐘內有效
+
+    const command = new PutObjectCommand({
+      Bucket: bucket,
+      Key: `test/${uuid()}`,
+      ContentType: "video/mp4",
+    });
+
+    return await getSignedUrl(s3Client, command, { expiresIn });
+  } catch (err) {
+    throw new Error(`產生 Presigned URL 錯誤: ${err}`);
+  }
+};

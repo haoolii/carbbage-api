@@ -12,4 +12,6 @@ router.use("/asset", assetRouter);
 router.use("/config", configRouter);
 router.use("/admin", adminRouter);
 
+router.use("/asset", assetRouter);
+
 export default router;

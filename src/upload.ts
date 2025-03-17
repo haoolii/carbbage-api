@@ -21,6 +21,7 @@ export const upload = multer({
       "video/mp4",
       "video/webm",
       "video/ogg",
+      "video/quicktime"
     ];
 
     if (allowedTypes.includes(file.mimetype)) {
