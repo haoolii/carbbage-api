@@ -7,6 +7,7 @@ import {
   getRecordCountHandler,
   postImageRecordHandler,
   postRecordReportHandler,
+  postMediaRecordHandlerV2,
 } from "./record.controller";
 import {
   validateBody,
@@ -60,6 +61,17 @@ router.post(
   parseFormData(mediaRecordParser),
   validateBody(postMediaRecordBodySchema),
   postMediaRecordHandler
+);
+
+router.post(
+  "/media/v2",
+  validateEnable("MEDIA_ENABLE"),
+  validateUpload(""),
+  validateCaptchaToken(),
+  validateBody(postMediaRecordFormDataSchema),
+  parseFormData(mediaRecordParser),
+  validateBody(postMediaRecordBodySchema),
+  postMediaRecordHandlerV2
 );
 
 router.get(

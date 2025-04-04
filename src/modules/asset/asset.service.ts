@@ -12,8 +12,91 @@ import { bucket, s3Client } from "../../config/s3";
 import db from "../../config/db";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { Upload } from "@aws-sdk/lib-storage";
 
 dayjs.extend(utc);
+
+export const uploadFilesToS3V2 = async (
+  files: Express.Multer.File[],
+  onProgress?: (progress: number) => void
+) => {
+  let totalSize = 0;
+  let loadedSize = 0;
+  const progressFiles: Record<
+    string,
+    {
+      loaded: number;
+      total: number;
+    }
+  > = {};
+
+  const tempUploadFiles = files.map((file) => {
+    const key = `${dayjs().utc().format("YYYY-MM-DD")}/${uuid()}${path.extname(
+      file.originalname
+    )}`;
+    progressFiles[key] = {
+      loaded: 0,
+      total: file.size,
+    };
+    totalSize += file.size;
+    return {
+      file: file,
+      key,
+    };
+  });
+
+  const keys = tempUploadFiles.map((tempUploadFile) => tempUploadFile.key);
+
+  let assetIds: Array<string> = [];
+  for (let key of keys) {
+    const asset = await db.asset.create({
+      data: {
+        key,
+      },
+    });
+    assetIds.push(asset.id);
+  }
+
+  const uploadPromises = tempUploadFiles.map(({ file, key }) => {
+    return new Promise<string>((resolve, reject) => {
+      const uploadParams = {
+        Bucket: bucket,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+        ALC: "authenticated-read",
+      };
+
+      const upload = new Upload({
+        client: s3Client,
+        params: uploadParams,
+      });
+      // 監聽上傳進度
+      upload.on("httpUploadProgress", (progress) => {
+        if (onProgress && progress.loaded && progress.total) {
+          // 新上傳的值
+          loadedSize += progress.loaded - (progressFiles[key]?.loaded || 0);
+
+          progressFiles[key] = {
+            loaded: progress.loaded,
+            total: progress.total
+          }
+
+          onProgress(loadedSize / totalSize);
+        }
+      });
+
+      upload
+        .done()
+        .then(() => resolve(key))
+        .catch(reject);
+    });
+  });
+
+  await Promise.all(uploadPromises);
+
+  return assetIds;
+};
 
 export const uploadFilesToS3 = async (files: Express.Multer.File[]) => {
   const tempUploadFiles = files.map((file) => {

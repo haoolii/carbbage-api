@@ -21,7 +21,7 @@ import {
 } from "./record.service";
 import { ShortenTypeEnum } from "../../types/shorten";
 import { flattenFiles } from "../../utils";
-import { uploadFilesToS3 } from "../asset/asset.service";
+import { uploadFilesToS3, uploadFilesToS3V2 } from "../asset/asset.service";
 
 export const postUrlRecordHandler = async (
   req: Request<{}, {}, PostUrlRecordBody>,
@@ -186,5 +186,58 @@ export const postRecordReportHandler = async (
     });
   } catch (error) {
     next(error);
+  }
+};
+
+export const postMediaRecordHandlerV2 = async (
+  req: Request<{}, {}, PostMediaRecordBody>,
+  res: Response<MessageResponse>,
+  next: NextFunction
+) => {
+  try {
+    const files = flattenFiles(req.files);
+
+    if (!files || !files.length) {
+      throw new Error(Code.FILE_IS_EMPTY);
+    }
+
+    const assetIds = await uploadFilesToS3V2(files, (percentage) => {
+      const data = {
+        isEnd: false,
+        payload: {
+          percentage
+        },
+      };
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+    });
+
+    const uniqueId = await createAssetsRecord(ShortenTypeEnum.MEDIA, {
+      prompt: req.body.prompt,
+      password: req.body.password,
+      passwordRequired: req.body.passwordRequired,
+      expireIn: req.body.expireIn,
+      assetIds: assetIds,
+    });
+
+    const data = {
+      isEnd: true,
+      payload: {
+        code: Code.SUCCESS,
+        data: { uniqueId },
+        message: "success",
+      },
+    };
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+    res.end();
+  } catch (error) {
+    const data = {
+      isEnd: true,
+      payload: {
+        code: Code.ERROR,
+        message: error,
+      },
+    };
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+    res.end();
   }
 };
